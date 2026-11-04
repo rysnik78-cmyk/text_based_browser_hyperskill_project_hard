@@ -1,6 +1,7 @@
 import os
 import sys
 from collections import deque
+import requests
 
 
 nytimes_com = '''
@@ -40,23 +41,33 @@ Twitter and Square Chief Executive Officer Jack Dorsey
 
 # write your code here
 
+def path_plus_file_name(cache_directory, url):
+    # url_without_dotcom_split = url.split('.')[:-1]
+    # file_name = "_".join(url_without_dotcom_split)
+    file_name = url.split('.')[0]
+    return cache_directory + '/' + file_name
+
 def save_to_file(data, directory, url):
     # print(name)
     # print(data)
-    patch_plus_name = directory + '/' + url.split('.')[0]
-    file = open(patch_plus_name, 'w', encoding='utf-8')
+    file = open(path_plus_file_name(directory, url), 'w', encoding='utf-8')
     file.write(data)
     file.close()
 
 def in_cache(cache_directory, url):
-    patch_plus_name = cache_directory + '/' + url.split('.')[0]
-    return os.access(patch_plus_name, os.F_OK)
+    return os.access(path_plus_file_name(cache_directory, url), os.F_OK)
 
 def print_from_cache(cache_directory, url):
-    patch_plus_name = cache_directory + '/' + url.split('.')[0]
-    file = open(patch_plus_name, 'r', encoding='utf-8')
+
+    file = open(path_plus_file_name(cache_directory, url), 'r', encoding='utf-8')
     print(file.read())
     file.close()
+
+def print_from_web_plus_save(directory, url):
+    r = requests.get('https://' + url)
+    content = r.text
+    print(content)
+    save_to_file(content, directory, url)
 
 def main():
     my_stack = deque()
@@ -82,6 +93,13 @@ def main():
                 else:
                     print(nytimes_com)
                     save_to_file(nytimes_com, args[1], user_url)
+                my_stack.append(user_url)
+                continue
+            case x if '.' in x:
+                if in_cache(args[1], user_url):
+                    print_from_cache(args[1], user_url)
+                else:
+                    print_from_web_plus_save(args[1], user_url)
                 my_stack.append(user_url)
                 continue
             case 'back':
