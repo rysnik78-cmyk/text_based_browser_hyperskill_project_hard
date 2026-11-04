@@ -7,8 +7,6 @@ def path_plus_file_name(cache_directory, url):
     return cache_directory + '/' + file_name
 
 def save_to_file(data, directory, url):
-    # print(name)
-    # print(data)
     file = open(path_plus_file_name(directory, url), 'w', encoding='utf-8')
     file.write(data)
     file.close()
@@ -25,25 +23,22 @@ def print_from_cache(cache_directory, url):
 def print_from_web_plus_save(directory, url):
     response = requests.get('https://' + url)
     soup = BeautifulSoup(response.content, 'html.parser')
-    print(soup.prettify())
-    # print(soup)
-    string = ''
-    # tags = soup.find_all(["<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "<p>", "<a>", "<ul>", "<ol>", "<li>"])
-    # tags = soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6", "p", "a", "ul", "ol", "li"])
+    output = []
     tags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'ul', 'ol', 'li']
-    # tags = ['a']
-    # # tags = ['[document]', 'head', 'script', 'style',
-    #          'body', 'html', 'h1', 'h2', 'h3', 'h4', 'h5',
-    #          'h6', 'title',
-    #          'table', 'div', 'li', 'form',
-    #          'img', 'tr', '\n']
-    found_parag = soup.find_all(tags)
+    counter = 0
+    for tag in soup.find_all(tags):
+        text = tag.get_text().strip()
+        if not text:
+            continue
 
-    for parag in found_parag:
-        #     print(tag.get_text(strip=True))
-        print(parag.get_text(strip=True))
-        string += parag.get_text(strip=True) + '\n'
-    save_to_file(string, directory, url)
+        if tag.name == 'a':
+            print(Fore.BLUE + text + Style.RESET_ALL)
+        else:
+            print(text)
+
+        output.append(text)
+
+    save_to_file('\n'.join(output), directory, url)
 
 def main():
     my_stack = deque()
@@ -54,23 +49,8 @@ def main():
             os.mkdir(str(args[1]))
     while True:
         user_url = input()
+        # print(user_url)
         match user_url:
-            case 'bloomberg.com':
-                if in_cache(args[1], user_url):
-                    print_from_cache(args[1], user_url)
-                else:
-                    print(bloomberg_com)
-                    save_to_file(bloomberg_com, args[1], user_url)
-                my_stack.append(user_url)
-                continue
-            case 'nytimes.com':
-                if in_cache(args[1], user_url):
-                    print_from_cache(args[1], user_url)
-                else:
-                    print(nytimes_com)
-                    save_to_file(nytimes_com, args[1], user_url)
-                my_stack.append(user_url)
-                continue
             case x if '.' in x:
                 if in_cache(args[1], user_url):
                     print_from_cache(args[1], user_url)
@@ -84,6 +64,7 @@ def main():
                 else:
                     my_stack.pop()
                     stack_url = my_stack.pop()
+                    print(stack_url)
                     print_from_cache(args[1], stack_url)
                     my_stack.append(stack_url)
             case 'exit':
