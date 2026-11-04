@@ -1,6 +1,7 @@
-
 import os
 import sys
+from collections import deque
+
 
 nytimes_com = '''
 This New Liquid Is Magnetic, and Mesmerizing
@@ -58,6 +59,7 @@ def print_from_cache(cache_directory, url):
     file.close()
 
 def main():
+    my_stack = deque()
     # os.chdir('Text-Based Browser')
     args = sys.argv  # we get the list of arguments from command line
     if len(args) == 2:
@@ -72,11 +74,24 @@ def main():
                 else:
                     print(bloomberg_com)
                     save_to_file(bloomberg_com, args[1], user_url)
+                my_stack.append(user_url)
                 continue
             case 'nytimes.com':
-                print(nytimes_com)
-                save_to_file(nytimes_com, args[1], user_url)
+                if in_cache(args[1], user_url):
+                    print_from_cache(args[1], user_url)
+                else:
+                    print(nytimes_com)
+                    save_to_file(nytimes_com, args[1], user_url)
+                my_stack.append(user_url)
                 continue
+            case 'back':
+                if len(my_stack) < 2:
+                    continue
+                else:
+                    my_stack.pop()
+                    stack_url = my_stack.pop()
+                    print_from_cache(args[1], stack_url)
+                    my_stack.append(stack_url)
             case 'exit':
                 break
             case _:
@@ -84,4 +99,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
