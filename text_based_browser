@@ -1,0 +1,10 @@
+while True:
+    user_url = input()
+    if user_url == 'bloomberg.com':
+        print(bloomberg_com)
+        continue
+    if user_url == 'nytimes.com':
+        print(nytimes_com)
+        continue
+    if user_url == 'exit':
+        break
